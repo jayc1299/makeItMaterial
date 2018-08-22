@@ -1,4 +1,4 @@
-<h1>Make Your App Material</h1>
+# Make Your App Material
 
 <p>
 This is the Make Your App Material project for the Udacity Nanodegree. The app is actually called XYZ Reader. It was provided with some bad reviews which need to be improved on.
