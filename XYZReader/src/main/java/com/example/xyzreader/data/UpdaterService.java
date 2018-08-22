@@ -19,14 +19,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class UpdaterService extends IntentService {
     private static final String TAG = "UpdaterService";
 
-    public static final String BROADCAST_ACTION_STATE_CHANGE
-            = "com.example.xyzreader.intent.action.STATE_CHANGE";
-    public static final String EXTRA_REFRESHING
-            = "com.example.xyzreader.intent.extra.REFRESHING";
+    public static final String BROADCAST_ACTION_STATE_CHANGE = "com.example.xyzreader.intent.action.STATE_CHANGE";
+    public static final String EXTRA_REFRESHING = "com.example.xyzreader.intent.extra.REFRESHING";
 
     public UpdaterService() {
         super(TAG);
@@ -47,7 +46,7 @@ public class UpdaterService extends IntentService {
                 new Intent(BROADCAST_ACTION_STATE_CHANGE).putExtra(EXTRA_REFRESHING, true));
 
         // Don't even inspect the intent, we only do one thing, and that's fetch content.
-        ArrayList<ContentProviderOperation> cpo = new ArrayList<ContentProviderOperation>();
+        ArrayList<ContentProviderOperation> cpo = new ArrayList<>();
 
         Uri dirUri = ItemsContract.Items.buildDirUri();
 
@@ -59,6 +58,8 @@ public class UpdaterService extends IntentService {
             if (array == null) {
                 throw new JSONException("Invalid parsed item array" );
             }
+
+            Log.d(TAG, "onHandleIntent: " + array.length());
 
             for (int i = 0; i < array.length(); i++) {
                 ContentValues values = new ContentValues();
