@@ -8,8 +8,9 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.app.ShareCompat;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Html;
-import android.text.Spanned;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,10 +24,12 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
+import com.google.common.base.Splitter;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -47,7 +50,7 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
     private ImageView mPhotoView;
     private TextView titleView;
     private TextView bylineView;
-    private TextView bodyView;
+    private RecyclerView bodyRecyclerView;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -120,10 +123,10 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
             return;
         }
 
-        titleView = (TextView) mRootView.findViewById(R.id.article_title);
-        bylineView = (TextView) mRootView.findViewById(R.id.article_byline);
-        bodyView = (TextView) mRootView.findViewById(R.id.article_body);
-        ImageButton upButton = (ImageButton) mRootView.findViewById(R.id.action_up);
+        titleView = mRootView.findViewById(R.id.article_title);
+        bylineView = mRootView.findViewById(R.id.article_byline);
+        bodyRecyclerView = mRootView.findViewById(R.id.detail_recycler_view);
+        ImageButton upButton = mRootView.findViewById(R.id.action_up);
 
         upButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -172,8 +175,22 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
 
             String contextText = mCursor.getString(ArticleLoader.Query.BODY);
             if (contextText != null && contextText.length() > 0) {
-                String content = fromHtml(contextText).toString();
-                bodyView.setText(content);
+
+                //Mark all paragraphs with custom character
+                String markParagraphs = contextText.replace("\r\n\r\n", "||");
+                //replace all newlines
+                String removedNewLines = markParagraphs.replace("\r\n", " ");
+                //SPlit all paragraphs into a list of chinks
+                List<String> items = Splitter.on("||").splitToList(removedNewLines);
+
+                Log.d(TAG, "showData: " + items.size());
+
+                //Make the chunks into an adapter. This is way more performant.
+                AdapterBodyText adapterBodyText = new AdapterBodyText(items);
+
+                bodyRecyclerView.setVisibility(View.VISIBLE);
+                bodyRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+                bodyRecyclerView.setAdapter(adapterBodyText);
             }
             
             String imageUrl = mCursor.getString(ArticleLoader.Query.PHOTO_URL);
@@ -199,7 +216,7 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
             mRootView.setVisibility(View.GONE);
             titleView.setText("N/A");
             bylineView.setText("N/A");
-            bodyView.setText("N/A");
+            bodyRecyclerView.setVisibility(View.GONE);
         }
     }
 
@@ -230,16 +247,5 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
     @Override
     public void onLoaderReset(Loader<Cursor> cursorLoader) {
         mCursor = null;
-    }
-
-    @SuppressWarnings("deprecation")
-    public static Spanned fromHtml(String html) {
-        Spanned result;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-            result = Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY);
-        } else {
-            result = Html.fromHtml(html);
-        }
-        return result;
     }
 }
