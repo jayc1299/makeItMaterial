@@ -24,6 +24,11 @@ import com.android.volley.toolbox.ImageLoader;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 /**
  * A fragment representing a single Article detail screen. This fragment is
  * either contained in a {@link ArticleListActivity} in two-pane mode (on
@@ -37,6 +42,7 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
     private Cursor mCursor;
     private long mItemId;
     private View mRootView;
+    private SimpleDateFormat serverDateFormat;
 
     private ImageView mPhotoView;
     private TextView titleView;
@@ -65,6 +71,7 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
         if (getArguments().containsKey(ARG_ITEM_ID)) {
             mItemId = getArguments().getLong(ARG_ITEM_ID);
         }
+        serverDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.US);
 
         setHasOptionsMenu(true);
     }
@@ -141,7 +148,16 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
                 }
             }
 
-            long publishedDate = mCursor.getLong(ArticleLoader.Query.PUBLISHED_DATE);
+            String publishedDateString = mCursor.getString(ArticleLoader.Query.PUBLISHED_DATE);
+
+            Date publishedDateAsDate = new Date();
+            try {
+                publishedDateAsDate = serverDateFormat.parse(publishedDateString);
+            } catch (ParseException e) {
+                Log.e(TAG, "showData parsing date failed: ", e);
+            }
+            long publishedDate = publishedDateAsDate.getTime();
+
             String author = mCursor.getString(ArticleLoader.Query.AUTHOR);
             if (bylineView != null && author != null) {
                 bylineView.setText(Html.fromHtml(
@@ -159,7 +175,7 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
                 String content = fromHtml(contextText).toString();
                 bodyView.setText(content);
             }
-
+            
             String imageUrl = mCursor.getString(ArticleLoader.Query.PHOTO_URL);
             if (imageUrl != null && imageUrl.length() > 0) {
                 ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
