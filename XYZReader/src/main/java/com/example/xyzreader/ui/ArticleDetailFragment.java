@@ -7,6 +7,7 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.ShareCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -38,9 +39,10 @@ import java.util.Locale;
  * tablets) or a {@link ArticleDetailActivity} on handsets.
  */
 public class ArticleDetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
-    private static final String TAG = ArticleDetailFragment.class.getSimpleName();
-
     public static final String ARG_ITEM_ID = "item_id";
+
+    private static final String TAG = ArticleDetailFragment.class.getSimpleName();
+    private static final String SAVED_LAYOUT_MANAGER = "saved_layout_manager";
 
     private Cursor mCursor;
     private long mItemId;
@@ -51,6 +53,7 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
     private TextView titleView;
     private TextView bylineView;
     private RecyclerView bodyRecyclerView;
+    private Parcelable layoutManagerSavedState;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -116,6 +119,23 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
 
         bindViews();
         return mRootView;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+
+        Parcelable state = bodyRecyclerView.getLayoutManager().onSaveInstanceState();
+        outState.putParcelable(SAVED_LAYOUT_MANAGER, state);
+
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onViewStateRestored(Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        if (savedInstanceState != null) {
+            layoutManagerSavedState = savedInstanceState.getParcelable(SAVED_LAYOUT_MANAGER);
+        }
     }
 
     private void bindViews() {
@@ -191,6 +211,9 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
                 bodyRecyclerView.setVisibility(View.VISIBLE);
                 bodyRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
                 bodyRecyclerView.setAdapter(adapterBodyText);
+                if (layoutManagerSavedState != null) {
+                    bodyRecyclerView.getLayoutManager().onRestoreInstanceState(layoutManagerSavedState);
+                }
             }
             
             String imageUrl = mCursor.getString(ArticleLoader.Query.PHOTO_URL);

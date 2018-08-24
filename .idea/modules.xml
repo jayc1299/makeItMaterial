@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/MakeItMaterial.iml" filepath="$PROJECT_DIR$/MakeItMaterial.iml" />
       <module fileurl="file://$PROJECT_DIR$/XYZReader/XYZReader.iml" filepath="$PROJECT_DIR$/XYZReader/XYZReader.iml" />
-      <module fileurl="file://$PROJECT_DIR$/XYZReader/XYZReader.iml" filepath="$PROJECT_DIR$/XYZReader/XYZReader.iml" />
       <module fileurl="file://$PROJECT_DIR$/makeItMaterial.iml" filepath="$PROJECT_DIR$/makeItMaterial.iml" />
     </modules>
   </component>
